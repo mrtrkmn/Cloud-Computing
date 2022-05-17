@@ -27,7 +27,9 @@ $ terraform destroy
 
 ```
 
-Compute admin
-Compute network admin
-Kubernetes Engine cluster admin
-Service account admin
+##### Make sure IAM Service account includes following permissions
+
+- Compute admin
+- Compute network admin
+- Kubernetes Engine cluster admin
+- Service account admin
