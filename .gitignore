@@ -1,4 +1,17 @@
 exercise-1/node_modules
 exercise-1/data
 exercise-1/cloud_computing_exercise_1_nodejs.pdf
+terraform/.terraform
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+# tfvars file added to gitignore since after 
+# adding your own tfvars file, you should not be able to
+# see the tfvars file in the git repository since it is private creds
+terraform/terraform.tfvars  
+terraform/.terraform.lock.hcl
+terraform/.terraform.tfstate.backup.hcl
+terraform/.terraform.tfstate.hcl
+
+
 .DS_Store
+.vscode
