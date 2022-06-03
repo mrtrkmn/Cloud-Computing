@@ -163,6 +163,6 @@ app.delete('/api/books/:id', (req, res) => {
  **********/
 
 // listen on the port 3000
-app.listen(process.env.PORT || 80, () => {
-  console.log('Express server is up and running on http://localhost:80/');
+app.listen(process.env.PORT || 3000, () => {
+  console.log('Express server is up and running on http://localhost:3000/');
 });
