@@ -15,3 +15,5 @@ terraform/.terraform.tfstate.hcl
 
 .DS_Store
 .vscode
+exercise-2/data
+terraform.tfstate
