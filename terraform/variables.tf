@@ -1,27 +1,27 @@
 variable "region" {
-    type = string
-    default = "us-central"
+  type    = string
+  default = "us-central"
 }
 variable "project" {
-    type = string
+  type = string
 }
 
 variable "user" {
-    type = string
+  type = string
 }
 
-variable "access_file"{
-    type = string
+variable "access_file" {
+  type = string
 }
 variable "email" {
-    type = string
+  type = string
 }
 variable "privatekeypath" {
-    type = string
-    default = "~/.ssh/id_rsa"
+  type    = string
+  default = "~/.ssh/id_rsa"
 }
 
 variable "publickeypath" {
-    type = string
-    default = "~/.ssh/id_rsa.pub"
+  type    = string
+  default = "~/.ssh/id_rsa.pub"
 }
