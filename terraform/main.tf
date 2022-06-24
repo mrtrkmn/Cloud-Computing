@@ -78,6 +78,7 @@ resource "google_compute_instance" "dev" {
   }
 
 
+
   provisioner "file" {
     connection {
       host = google_compute_address.static.address
@@ -86,7 +87,8 @@ resource "google_compute_instance" "dev" {
       user    = var.user
       timeout = "500s"
       # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      private_key = file(var.privatekeypath)
+      # private_key = file(var.privatekeypath)
+      agent  = true
     }
 
     source      = "scripts/install-tools.sh"
@@ -101,7 +103,8 @@ resource "google_compute_instance" "dev" {
       user    = var.user
       timeout = "500s"
       # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      private_key = file(var.privatekeypath)
+      # private_key = file(var.privatekeypath)
+      agent  = true
     }
 
     source      = "../exercise-2/docker-compose.yml"
@@ -116,7 +119,23 @@ resource "google_compute_instance" "dev" {
       user    = var.user
       timeout = "500s"
       # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      private_key = file(var.privatekeypath)
+      # private_key = file(var.privatekeypath)
+      agent  = true
+    }
+
+    source      = "../exercise-3"
+    destination = "/home/${var.user}/"
+  }
+  provisioner "file" {
+    connection {
+      host = google_compute_address.static.address
+      type = "ssh"
+      # username of the instance would vary for each account refer the OS Login in GCP documentation
+      user    = var.user
+      timeout = "500s"
+      # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
+      # # private_key = file(var.privatekeypath)
+      agent  = true
     }
     source      = "configs/docker.service"
     destination = "/tmp/docker.service"
@@ -134,7 +153,8 @@ resource "google_compute_instance" "dev" {
       user    = var.user
       timeout = "500s"
       # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      private_key = file(var.privatekeypath)
+      # private_key = file(var.privatekeypath)
+      agent = true
     }
 
     # Commands to be executed as the instance gets ready.

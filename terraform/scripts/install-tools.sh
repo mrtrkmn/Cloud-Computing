@@ -84,14 +84,21 @@ CONFIGURE_DOCKER_ENGINE() {
     systemctl restart docker
 }
 
-RUN_APPLICATION() {
+
+
+RUN_EXERCISE_2() {
     docker-compose -f /home/mrturkmen/docker-compose.yml up -d 
     rm -rf ~/exercise-2/.env
 }
 
+RUN_EXERCISE_3() {
+    cd /home/mrturkmen/exercise-3
+    docker-compose -f /home/mrturkmen/exercise-3/docker-compose.yml up -d
+}
+
 # required for exercise-1 submission
 
-INSTALL_NODEJS
+# INSTALL_NODEJS
 #INSTALL_MONGODB # removed since exercise-2 deploys it as docker image
 
 
@@ -100,4 +107,5 @@ INSTALL_NODEJS
 INSTALL_DOCKER_ENGINE
 CONFIGURE_DOCKER_ENGINE
 INSTALL_DOCKER_COMPOSE 
-RUN_APPLICATION
+# RUN_APPLICATION
+RUN_EXERCISE_3
