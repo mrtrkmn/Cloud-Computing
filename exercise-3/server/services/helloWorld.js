@@ -17,7 +17,7 @@ const SAY_WELCOME = { role: 'helloWorld', cmd: 'Welcome' };
 /**
  * Call Service Method
  */
-const sayWelcome = function(name){
+const sayWelcome = function(name) {
     return act(Object.assign({}, SAY_WELCOME, { name }));
 };
 

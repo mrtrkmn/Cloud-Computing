@@ -11,52 +11,58 @@
  * BASE SETUP
  * import the packages we need
  */
+
+
+/*
+ * Import the packages we need
+ */
 const express = require('express');
-/**
- * import the Services we need
+
+/*
+ * Import the services we need
  */
 const helloWorldService = require('./services/helloWorld');
 const productDescpService = require('./services/productDescp');
 const productPriceService = require('./services/productPrice');
-/**
- * javascript promises for join function
+
+/*
+ * JavaScript promises for join function
  */
 const join = require("bluebird").join;
 
 const app = express();
 
 const router = express.Router();
-/**
+
+/*
  * Middleware to use for all requests
  */
 router.use(function(req, res, next) {
-    /**
+    /*
      * Logs can be printed here while accessing any routes
      */
-    console.log('Accessing Exercises Routes');
+    console.log('Accessing Exercises Routes...');
     next();
 });
-/**
- * Base route of the router : to make sure everything is working check http://localhost:8080/exercises)
+
+/*
+ * Base route of the router : to make sure everything is working check http://localhost:3000/api
  */
 router.get('/', function(req, res) {
     res.json({ message: 'Welcome to Cloud Computing Exercises API!'});
 });
-/**
- * Exercise 3:
- */
+
 // query params: name & productId
+// check http://localhost:3000/api/exercise3/Hua-Ming/100
 router.route('/exercise3/:name/:productId')
     .get(function(req, res)
     {
-
         join(
             helloWorldService.sayWelcome(req.params.name),
             productDescpService.getProductURL(req.params.productId),
             productDescpService.getProductName(req.params.productId),
             productPriceService.getProductPrice(req.params.productId),
-            function (resulthelloWorld, productDescpServiceURL, productDescpServiceName,productPriceServicePrice ) {
-
+            function (resulthelloWorld, productDescpServiceURL, productDescpServiceName, productPriceServicePrice) {
                 var ex3_response_message = {
                     "hello": resulthelloWorld.result,
                     "product_id": req.params.productId,
@@ -68,13 +74,12 @@ router.route('/exercise3/:name/:productId')
             }
         );
     });
-/**
+
+/*
  * REGISTER OUR ROUTES
  * our router is now pointing to /api
  */
 app.use('/api', router);
-
-
 
 module.exports = app;
 

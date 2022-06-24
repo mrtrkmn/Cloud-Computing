@@ -5,5 +5,5 @@ const config = require('./config');
  * our router is now pointing to /api
  */
 app.listen(config.server.port, function () {
-    console.log('Server listening on port 3000!')
+    console.log('Server listening on port 3000!');
 });

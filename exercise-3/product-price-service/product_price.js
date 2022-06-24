@@ -1,24 +1,26 @@
 module.exports = function (options) {
-    //Import the mock data json file
+    // Import the mock data json file
     const mockData = require('./MOCK_DATA.json');
-    //To DO: Add the patterns and their corresponding functions
+    
+	// Add the patterns and their corresponding functions
     this.add('role:product,cmd:getProductPrice', productPrice);
 
-    //To DO: add the pattern functions and describe the logic inside the function
-    function productPrice(msg, respond) {
-        //Get the product id from the message
-        const productId = msg.productId;
-        mockData.forEach(function (product) {
-            if (product.id == productId) {
-                //If the product id is found, return the product price
-                respond(null, {result: product.price});
-            }
-            else {
-                //If the product id is not found, return an error message
-                respond(null, {result: "Product not found"});
-            }
-        }
-        );}
-
-    
+    // Add the pattern functions and describe the logic inside the function
+	function productPrice(msg, respond) {
+		if (msg.productId) 
+		{
+			mockData.forEach(function(item) {
+				if (item.product_id == msg.productId)
+				{
+					var foundProductPrice = item.product_price;
+					respond(null, { result: foundProductPrice });
+					console.log("#" + item.product_id + " product_price : " + foundProductPrice);
+				}
+			});
+		}
+		else
+		{
+			respond(null, { result: -1 });
+		}
+	}
 }
