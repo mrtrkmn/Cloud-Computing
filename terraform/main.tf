@@ -5,12 +5,12 @@ provider "google" {
 }
 
 resource "google_compute_firewall" "firewall" {
-  name    = "gritfy-firewall-externalssh"
+  name    = "kubernetes-the-hard-way-allow-external"
   network = "default"
 
   allow {
-    protocol = "tcp"
-    ports    = ["22"]
+    protocol = "tcp" # ssh, http, https and kubernetes communication
+    ports    = ["22","80","443", "6443"]
   }
   allow {
     protocol = "tcp"
@@ -21,24 +21,17 @@ resource "google_compute_firewall" "firewall" {
     protocol = "tcp"
     ports    = ["3000"]
   }
-
-  source_ranges = ["0.0.0.0/0"] # Not So Secure. Limit the Source Range
-  target_tags   = ["externalssh"]
-}
-
-
-resource "google_compute_firewall" "webserverrule" {
-  name    = "gritfy-webserver"
-  network = "default"
-
-  allow {
+  allow {  # kubernetes node port range
     protocol = "tcp"
-    ports    = ["80", "443"]
+    ports   = ["30000-32767"] 
   }
 
+
   source_ranges = ["0.0.0.0/0"] # Not So Secure. Limit the Source Range
-  target_tags   = ["webserver"]
+  target_tags   = ["firewall-rules"]
 }
+
+
 
 # We create a public IP address for our google compute instance to utilize
 resource "google_compute_address" "static" {
@@ -50,10 +43,10 @@ resource "google_compute_address" "static" {
 
 
 resource "google_compute_instance" "dev" {
-  name         = "devserver"                  # name of the server
-  machine_type = "e2-standard-2"              # machine type refer google machine types
+  name         = "kube-master"                  # name of the server
+  machine_type = "n1-standard-2"              # machine type refer google machine types
   zone         = "${var.region}-a"            # `a` zone of the selected region in our case us-central-1a
-  tags         = ["externalssh", "webserver"] # selecting the vm instances with tags
+  tags         = ["firewall-rules", "kubernetes"] # selecting the vm instances with tags
 
   # to create a startup disk with an Image/ISO. 
   boot_disk {
@@ -78,95 +71,8 @@ resource "google_compute_instance" "dev" {
   }
 
 
-
-  provisioner "file" {
-    connection {
-      host = google_compute_address.static.address
-      type = "ssh"
-      # username of the instance would vary for each account refer the OS Login in GCP documentation
-      user    = var.user
-      timeout = "500s"
-      # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      # private_key = file(var.privatekeypath)
-      agent  = true
-    }
-
-    source      = "scripts/install-tools.sh"
-    destination = "/tmp/install-tools.sh"
-  }
-
-  provisioner "file" {
-    connection {
-      host = google_compute_address.static.address
-      type = "ssh"
-      # username of the instance would vary for each account refer the OS Login in GCP documentation
-      user    = var.user
-      timeout = "500s"
-      # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      # private_key = file(var.privatekeypath)
-      agent  = true
-    }
-
-    source      = "../exercise-2/docker-compose.yml"
-    destination = "/home/${var.user}/docker-compose.yml"
-  }
-
-  provisioner "file" {
-    connection {
-      host = google_compute_address.static.address
-      type = "ssh"
-      # username of the instance would vary for each account refer the OS Login in GCP documentation
-      user    = var.user
-      timeout = "500s"
-      # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      # private_key = file(var.privatekeypath)
-      agent  = true
-    }
-
-    source      = "../exercise-3"
-    destination = "/home/${var.user}/"
-  }
-  provisioner "file" {
-    connection {
-      host = google_compute_address.static.address
-      type = "ssh"
-      # username of the instance would vary for each account refer the OS Login in GCP documentation
-      user    = var.user
-      timeout = "500s"
-      # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      # # private_key = file(var.privatekeypath)
-      agent  = true
-    }
-    source      = "configs/docker.service"
-    destination = "/tmp/docker.service"
-  }
-
-
-
-  # to connect to the instance after the creation and execute few commands for provisioning
-  # here you can execute a custom Shell script or Ansible playbook
-  provisioner "remote-exec" {
-    connection {
-      host = google_compute_address.static.address
-      type = "ssh"
-      # username of the instance would vary for each account refer the OS Login in GCP documentation
-      user    = var.user
-      timeout = "500s"
-      # private_key being used to connect to the VM. ( the public key was copied earlier using metadata )
-      # private_key = file(var.privatekeypath)
-      agent = true
-    }
-
-    # Commands to be executed as the instance gets ready.
-    # installing mongoDB
-    inline = [
-      "chmod +x /tmp/install-tools.sh",
-      "sudo bash /tmp/install-tools.sh"
-    ]
-  }
-
   # Ensure firewall rule is provisioned before server, so that SSH doesn't fail.
-  depends_on = [google_compute_firewall.firewall, google_compute_firewall.webserverrule]
+  depends_on = [google_compute_firewall.firewall]
 
   # Defining what service account should be used for creating the VM
   service_account {
