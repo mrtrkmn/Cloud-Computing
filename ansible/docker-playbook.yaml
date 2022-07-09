@@ -94,7 +94,7 @@
 
 
   - name: Kubeadm init pod network 
-    command: kubeadm init --pod-network-cidr=$(ip -o -4 route show to default | awk '{print $3}' | cut -d. -f1-3 | awk '{print $1".0/16"}')
+    command: kubeadm init --pod-network-cidr=10.244.0.0/16
 
   - name: Create /opt/bin directory
     file: 
