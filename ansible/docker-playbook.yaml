@@ -1,0 +1,148 @@
+---
+- hosts: gcloud
+  become: true
+  become_user: root
+  tasks:
+  - name: Install packages that allow apt to be used over HTTPS
+    apt:
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - software-properties-common
+
+  - name: Add an apt signing key for Docker
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add apt repository for stable version
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+      state: present
+
+  - name: Install docker and its dependecies
+    apt: 
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - docker-ce 
+      - docker-ce-cli 
+      - containerd.io
+
+
+  - name: Add user to docker group
+    user:
+      name: mrturkmen
+      group: docker
+
+
+  - name: Remove swapfile from /etc/fstab
+    mount:
+      name: "{{ item }}"
+      fstype: swap
+      state: absent
+    with_items:
+      - swap
+      - none
+
+  - name: Disable swap
+    command: swapoff -a
+    when: ansible_swaptotal_mb > 0
+
+
+  - name: Add an apt signing key for Kubernetes
+    apt_key:
+      url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+      state: present
+
+  - name: Adding apt repository for Kubernetes
+    apt_repository:
+      repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+      state: present
+      filename: kubernetes.list
+
+  - name: Install Kubernetes binaries
+    apt: 
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+        - kubelet 
+        - kubeadm 
+        - kubernetes-cni
+      
+
+  - name: Remove containerd config
+    file: 
+      path: /etc/containerd/config.toml
+      state: absent
+
+  - name: Restart containerd
+    service:
+      name: containerd
+      daemon_reload: yes
+      state: restarted
+
+
+  - name: Kubeadm init pod network 
+    command: kubeadm init --pod-network-cidr=$(ip -o -4 route show to default | awk '{print $3}' | cut -d. -f1-3 | awk '{print $1".0/16"}')
+
+  - name: Create /opt/bin directory
+    file: 
+      path: /opt/bin 
+      state: directory 
+      mode: 0755
+
+  - name: Download flannel binary 
+    get_url: 
+      url: https://github.com/flannel-io/flannel/releases/download/v0.18.1/flanneld-amd64
+      dest: /opt/bin/flannel
+      mode: 0757
+
+  - name: Create .kube directory
+    become: yes
+    become_user: mrturkmen
+    file:
+      path: $HOME/.kube
+      state: directory
+      mode: 0755
+
+  - name: Check admin.conf file exists.
+    stat:
+      path: /etc/kubernetes/admin.conf
+    register: k8s_conf
+
+
+  - name: Copy admin.conf to user's kube config
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: /home/mrturkmen/.kube/config
+      remote_src: yes
+      owner: mrturkmen
+    when: k8s_conf.stat.exists
+
+
+  - name: Chown .kube/config 
+    command: "{{ item }}"
+    with_items:
+        - chown mrturkmen:mrturkmen /home/mrturkmen/.kube/config
+
+
+  - name: Kubectl apply flannel network config 
+    command: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+    become: true 
+    become_user: mrturkmen
+
+
+  # - name: Install flannel pod network
+  #   become: false
+  #   command: kubectl create -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
