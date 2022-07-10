@@ -10,7 +10,7 @@ resource "google_compute_firewall" "firewall" {
 
   allow {
     protocol = "tcp" # ssh, http, https and kubernetes communication
-    ports    = ["22","80","443", "6443"]
+    ports    = ["22","80","443", "6443", "8080", "8001"]
   }
   allow {
     protocol = "tcp"
@@ -44,7 +44,7 @@ resource "google_compute_address" "static" {
 
 resource "google_compute_instance" "dev" {
   name         = "kube-master"                  # name of the server
-  machine_type = "n1-standard-2"              # machine type refer google machine types
+  machine_type = "n1-standard-4"              # machine type refer google machine types
   zone         = "${var.region}-a"            # `a` zone of the selected region in our case us-central-1a
   tags         = ["firewall-rules", "kubernetes"] # selecting the vm instances with tags
 
