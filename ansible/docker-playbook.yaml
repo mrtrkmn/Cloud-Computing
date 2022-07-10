@@ -135,14 +135,104 @@
     command: "{{ item }}"
     with_items:
         - chown mrturkmen:mrturkmen /home/mrturkmen/.kube/config
-
+    
 
   - name: Kubectl apply flannel network config 
     command: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
     become: true 
     become_user: mrturkmen
 
+  - name: Copy Exercise-4 
+    synchronize: 
+      src: ../exercise-4
+      dest: /home/mrturkmen/
+  
+  - name: Taint nodes 
+    command: kubectl taint nodes --all node-role.kubernetes.io/master-
+    become: true 
+    become_user: mrturkmen
 
-  # - name: Install flannel pod network
-  #   become: false
-  #   command: kubectl create -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
+  - name: Proxy  kubectl 
+    shell: nohup kubectl proxy --address='0.0.0.0' --disable-filter=true </dev/null >/dev/null 2>&1 &
+  
+  - name: Deploy server deployment
+    command: kubectl apply -f /home/mrturkmen/exercise-4/kubernetes_files/deployments/server.yml
+    become: true 
+    become_user: mrturkmen
+    register: server_deployment
+
+  - name: Deploy product-descp
+    command: kubectl apply -f /home/mrturkmen/exercise-4/kubernetes_files/deployments/product-descp.yml
+    become: true 
+    become_user: mrturkmen
+    register: product_descp
+
+  - name: Deploy product-price 
+    command: kubectl apply -f /home/mrturkmen/exercise-4/kubernetes_files/deployments/product-price.yml
+    become: true
+    become_user: mrturkmen
+    register: product_price
+
+  - name: Deploy hello-world
+    command: kubectl apply -f /home/mrturkmen/exercise-4/kubernetes_files/deployments/hello-world.yml
+    become: true
+    become_user: mrturkmen
+    register: hello_world
+
+  - name: Create service server
+    command: kubectl apply -f /home/mrturkmen/exercise-4/kubernetes_files/services/server.yml
+    become: true
+    become_user: mrturkmen
+    register: server_service
+
+  - name: Create service product-descp
+    command: kubectl apply -f /home/mrturkmen/exercise-4/kubernetes_files/services/product-descp.yml
+    become: true
+    become_user: mrturkmen
+    register: product_descp_service
+
+  - name: Create service product-price
+    command: kubectl apply -f /home/mrturkmen/exercise-4/kubernetes_files/services/product-price.yml
+    become: true
+    become_user: mrturkmen
+    register: product_price_service
+
+  - name: Create service hello-world
+    command: kubectl apply -f /home/mrturkmen/exercise-4/kubernetes_files/services/hello-world.yml
+    become: true
+    become_user: mrturkmen
+    register: hello_world_service
+
+  - name: Get service port 
+    script: ./get-port.sh
+    register: service_port
+    become: true
+    become_user: mrturkmen
+    
+  - name: Scale server deployment 
+    command: kubectl scale --replicas=2 deployment server_deployment
+    become: true
+    become_user: mrturkmen
+    register: server_deployment_scale 
+
+  - name: Scale product-descp deployment
+    command: kubectl scale --replicas=2 deployment product-descp-deployment
+    become: true
+    become_user: mrturkmen
+    register: product_descp_deployment_scale
+
+  - name: Scale product-price deployment
+    command: kubectl scale --replicas=2 deployment product-price-deployment
+    become: true
+    become_user: mrturkmen
+    register: product_price_deployment_scale
+
+  - name: Scale hello-world deployment
+    command: kubectl scale --replicas=2 deployment hello-world-deployment
+    become: true
+    become_user: mrturkmen
+    register: hello_world_deployment_scale
+
+  - name: Debug server ip and port
+    debug:
+      msg: "Server IP: {{ inventory_hostname }} Server Port: {{ service_port.stdout }}"
