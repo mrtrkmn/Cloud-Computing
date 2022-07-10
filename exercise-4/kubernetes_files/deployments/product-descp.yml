@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-descp-deployment
+  labels:
+    app: product-descp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-descp
+  template:
+    metadata:
+      labels:
+        app: product-descp
+    spec:
+      containers:
+        - name: product-descp
+          image: mrturkmen/microservice:productdescp
+          ports:
+            - containerPort: 9002
+
+
+            

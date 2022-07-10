@@ -48,7 +48,7 @@ router.get('/', function(req, res) {
  */
 
 router.get('/exercise4', function(req, res){
-    res.json({ message: 'group84 application deployed using kubernetes'});
+    res.send('group 84 application deployed using kubernetes')
 })
 
 /**
