@@ -152,6 +152,11 @@
     become: true 
     become_user: mrturkmen
 
+  - name: Taint control plane
+    command: kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+    become: true
+    become_user: mrturkmen
+
   - name: Proxy  kubectl 
     shell: nohup kubectl proxy --address='0.0.0.0' --disable-filter=true </dev/null >/dev/null 2>&1 &
   
@@ -210,7 +215,7 @@
     become_user: mrturkmen
     
   - name: Scale server deployment 
-    command: kubectl scale --replicas=2 deployment server_deployment
+    command: kubectl scale --replicas=2 deployment server-deployment
     become: true
     become_user: mrturkmen
     register: server_deployment_scale 
